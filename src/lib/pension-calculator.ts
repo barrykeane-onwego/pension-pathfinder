@@ -34,6 +34,17 @@ export interface CalculatorResults {
   lifetimeROI20: number;
   savingsVsClass3EUR: number;
   savingsPercentage: number;
+  // Future contribution fields
+  totalYearsAfterBuyback: number;
+  yearsStillNeeded: number;
+  futureYearsToContribute: number;
+  futureContributionCostGBP: number;
+  futureContributionCostEUR: number;
+  totalInvestmentGBP: number;
+  totalInvestmentEUR: number;
+  projectedTotalYears: number;
+  projectedPensionPercentage: number;
+  projectedWeeklyPensionGBP: number;
   chartData: { year: number; cumulativeEarnings: number; cost: number; cumulativeEarningsTripleLock: number }[];
 }
 
