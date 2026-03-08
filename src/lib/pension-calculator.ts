@@ -88,6 +88,19 @@ export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
   const savingsVsClass3EUR = costClass3EUR - costEUR;
   const savingsPercentage = costClass3EUR > 0 ? (savingsVsClass3EUR / costClass3EUR) * 100 : 0;
 
+  // Future contribution calculations
+  const totalYearsAfterBuyback = currentYears + yearsToBuyBack;
+  const yearsStillNeeded = Math.max(0, FULL_PENSION_YEARS - totalYearsAfterBuyback);
+  const futureYearsContributable = Math.max(0, pensionAge - currentAge);
+  const futureYearsToContribute = Math.min(yearsStillNeeded, futureYearsContributable);
+  const futureContributionCostGBP = futureYearsToContribute * CLASS_3_WEEKLY * WEEKS_PER_YEAR;
+  const futureContributionCostEUR = futureContributionCostGBP * GBP_TO_EUR;
+  const totalInvestmentGBP = costGBP + futureContributionCostGBP;
+  const totalInvestmentEUR = costEUR + futureContributionCostEUR;
+  const projectedTotalYears = Math.min(FULL_PENSION_YEARS, currentYears + yearsToBuyBack + futureYearsToContribute);
+  const projectedPensionPercentage = projectedTotalYears / FULL_PENSION_YEARS;
+  const projectedWeeklyPensionGBP = FULL_PENSION_WEEKLY_GBP * projectedPensionPercentage;
+
   // Chart data: cumulative earnings over retirement years
   const chartData = [];
   let cumEarnings = 0;
@@ -98,7 +111,7 @@ export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
     chartData.push({
       year: y,
       cumulativeEarnings: Math.round(cumEarnings),
-      cost: Math.round(costEUR),
+      cost: Math.round(totalInvestmentEUR),
       cumulativeEarningsTripleLock: Math.round(cumEarningsTripleLock),
     });
   }
@@ -118,6 +131,16 @@ export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
     lifetimeROI20,
     savingsVsClass3EUR,
     savingsPercentage,
+    totalYearsAfterBuyback,
+    yearsStillNeeded,
+    futureYearsToContribute,
+    futureContributionCostGBP,
+    futureContributionCostEUR,
+    totalInvestmentGBP,
+    totalInvestmentEUR,
+    projectedTotalYears,
+    projectedPensionPercentage,
+    projectedWeeklyPensionGBP,
     chartData,
   };
 }
