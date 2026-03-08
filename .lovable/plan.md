@@ -1,88 +1,55 @@
-# Enhanced Thank You Screen — Contact, WhatsApp, and Callback Scheduler
 
-## What Changes
 
-The current "Thank You" state in `LeadCaptureForm.tsx` (lines 59-72) is a simple confirmation message. We will replace it with a rich post-submission experience containing three sections:
+# Fix Break-Even Calculation and Emphasise Triple-Lock Break-Even
 
----
+## Critical Bug Found
 
-## 1. Direct Contact Options
+The calculator has an inconsistency: the **cost line** on the chart uses `totalInvestmentEUR` (buyback + future Class 3 contributions), but the **earnings lines** only count pension from the `yearsToBuyBack` (6 years). The future 9 years of Class 3 contributions also add qualifying years and pension income, but aren't reflected in earnings. This makes break-even appear much later than it should.
 
-Two prominent, tappable buttons:
+For the example case (45yo, 20 current, 6 buyback, 9 future):
+- Current earnings calc: only 6/35 of full pension = ~€2,218/yr at today's rates
+- Should be: all 15 additional years (6+9) = 15/35 of full pension = ~€5,545/yr at today's rates
+- With triple lock at claim time (22 years): ~€5,545 × 1.035^22 ≈ ~€11,790/yr
+- Total investment: ~€10,819
+- True break-even with triple lock: under 1 year of pension income
 
-- **Call Us**: `tel:+35312337558` — displays as "+353 1 233 7558" with a Phone icon. Clickable link that opens the dialler on mobile.
-- **WhatsApp Us**: `whatsapp://send?phone=447400440290` — displays"Requeat a callback/Chat on WhatsApp" with a MessageCircle icon. Opens WhatsApp on mobile/desktop.
+OR — the alternative interpretation is that the earnings line should only reflect the additional pension attributable to the buyback (the 6 years), and the cost line should only show buyback cost. The future contributions are a separate ongoing cost/benefit. This would keep the chart focused on the CF83 decision.
 
-Both styled as outlined buttons side-by-side (stacking vertically on mobile).
+**I recommend showing TWO break-even figures:**
+1. **Buyback-only break-even** (triple lock): buyback cost vs buyback pension earnings — this is the CF83 sales message
+2. **Total journey break-even** (triple lock): total investment vs total additional pension — the full picture
 
----
+## Changes
 
-## 2. Request a Callback Scheduler
+### `src/lib/pension-calculator.ts`
+- Add `totalAdditionalYears = yearsToBuyBack + futureYearsToContribute`
+- Add `totalAdditionalAnnualPensionEUR` based on all additional years
+- Add `breakEvenMonthsTripleLock` — iterates month-by-month with triple-lock-inflated annual pension until cumulative earnings exceed total investment
+- Add `breakEvenMonthsBuybackTripleLock` — same but only buyback cost vs buyback pension
+- Update chart data to include a `cumulativeEarningsTotal` line for total additional pension
 
-An interactive day/time picker below the contact buttons:
+### `src/components/ResultsDashboard.tsx`
+- Replace the current flat break-even card with a prominent **triple-lock break-even card**
+- Show "Break-even with triple lock: ~X years Y months" as the primary figure
+- Add explanatory text: "Your pension will be set at triple-lock-adjusted rates when you claim at age 67"
+- Style it as a highlighted/emphasised card (larger, coloured border)
 
-- **Day selection**: Show the next 7 calendar days (e.g., "Mon 3 Mar", "Tue 4 Mar", ...). Each day is a selectable chip/toggle. Multiple days can be selected.
-- **Time slot selection**: Three toggle options per selected concept — "Morning (9-12)", "Afternoon (12-5)", "Evening (5-8)". Multiple slots can be selected across multiple days.
-- **Data structure**: Array of `{ date: string (ISO), slots: ("morning" | "afternoon" | "evening")[] }` — sent alongside the lead data to Close CRM.
-- **Submit button**: "Request Callback" — sends the callback preferences. Shows a confirmation inline once submitted.
+### `src/components/PensionChart.tsx`
+- Change the chart's `breakEvenYear` to use the triple-lock earnings line (`cumulativeEarningsTripleLock >= cost`) — currently it uses the flat line
+- Add an annotation/callout at the break-even point (not just a reference line — add a labelled dot or badge)
+- Add a shaded "profit zone" fill above the break-even point to visually emphasise the return
 
-The UI uses the existing ToggleGroup component for time slots and simple toggle chips for days to keep it lightweight.
+## Technical Detail
 
----
-
-## 3. Confirmation Flow
-
-- Initially shows the contact options + callback scheduler
-- After submitting callback preferences, the scheduler section collapses into a confirmation: "Callback requested — we'll be in touch at your preferred times"
-- Contact buttons remain visible throughout
-
----
-
-## Technical Details
-
-### Files Modified
-
-`**src/components/LeadCaptureForm.tsx**`:
-
-- Replace the `submitted` return block (lines 59-72) with a new `ThankYouScreen` section
-- Add state for callback selections: `callbackSlots` as `Map<string, Set<string>>`
-- Add a `handleCallbackSubmit` function (currently logs/simulates, ready for CRM integration)
-- Generate next 7 days using `date-fns` (already installed) with `addDays` and `format`
-- Use `ToggleGroup` from existing UI components for time slot selection
-
-### New Component Structure (within LeadCaptureForm)
-
-```text
-ThankYou Card
-+-- "Thank You" heading + message
-+-- Contact Buttons Row
-|   +-- [Phone icon] Call Us  (tel: link)
-|   +-- [WhatsApp icon] WhatsApp Us  (whatsapp: link)
-+-- Separator
-+-- Callback Scheduler
-|   +-- "Request a Callback" heading
-|   +-- Day chips (next 7 days, multi-select)
-|   +-- Time slot toggles per selected day (Morning/Afternoon/Evening)
-|   +-- [Submit] "Request Callback" button
-+-- Privacy note
+Triple-lock break-even calculation:
 ```
-
-### Data for CRM
-
-The callback data structure to be sent alongside existing lead data:
-
-```typescript
-interface CallbackPreference {
-  date: string;        // e.g. "2026-03-04"
-  dateLabel: string;   // e.g. "Tue 4 Mar"
-  slots: string[];     // e.g. ["morning", "afternoon"]
+let cumulative = 0;
+const annualPensionAtClaim = additionalAnnualPensionEUR * (1.035 ^ yearsUntilPension);
+for (month = 1; month <= 300; month++) {
+  cumulative += annualPensionAtClaim / 12;
+  if (cumulative >= totalInvestmentEUR) return month;
 }
 ```
 
-This is ready to be included in the Close CRM edge function payload when that integration is built.
+This gives the realistic break-even because pension is locked at claim-time rates (already triple-lock-inflated by the time they reach 67).
 
-### Dependencies Used
-
-- `date-fns` (already installed) — for `addDays`, `format`, `startOfDay`
-- `lucide-react` (already installed) — `Phone`, `MessageCircle` icons
-- Existing UI: `Button`, `Card`, `Badge` or toggle chips, `Separator`
