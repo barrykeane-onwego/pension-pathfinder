@@ -1,43 +1,88 @@
+# Enhanced Thank You Screen — Contact, WhatsApp, and Callback Scheduler
 
+## What Changes
 
-# Updated Example Calculations
+The current "Thank You" state in `LeadCaptureForm.tsx` (lines 59-72) is a simple confirmation message. We will replace it with a rich post-submission experience containing three sections:
 
-Adjusting the plan's example numbers for the corrected scenario:
+---
 
-**Inputs**: 45 years old, 20 current NI years, buying back 6 past gap years (Class 2), future top-ups at Class 3.
+## 1. Direct Contact Options
 
-```
-Current years:           20
-Past buyback (Class 2):   6 years × £3.45/wk × 52 = £1,076  → €1,259
-After buyback:           26 years
+Two prominent, tappable buttons:
 
-Years still needed:      35 - 26 = 9
-Years until pension:     67 - 45 = 22
-Future years to contribute: min(9, 22) = 9
+- **Call Us**: `tel:+35312337558` — displays as "+353 1 233 7558" with a Phone icon. Clickable link that opens the dialler on mobile.
+- **WhatsApp Us**: `whatsapp://send?phone=447400440290` — displays"Requeat a callback/Chat on WhatsApp" with a MessageCircle icon. Opens WhatsApp on mobile/desktop.
 
-Future cost (Class 3):   9 years × £17.45/wk × 52 = £8,171  → €9,560
-Total investment:        €1,259 + €9,560 = €10,819
+Both styled as outlined buttons side-by-side (stacking vertically on mobile).
 
-Projected total years:   20 + 6 + 9 = 35 (full pension)
-```
+---
 
-**UI example in the "Full Pension Journey" card**:
+## 2. Request a Callback Scheduler
+
+An interactive day/time picker below the contact buttons:
+
+- **Day selection**: Show the next 7 calendar days (e.g., "Mon 3 Mar", "Tue 4 Mar", ...). Each day is a selectable chip/toggle. Multiple days can be selected.
+- **Time slot selection**: Three toggle options per selected concept — "Morning (9-12)", "Afternoon (12-5)", "Evening (5-8)". Multiple slots can be selected across multiple days.
+- **Data structure**: Array of `{ date: string (ISO), slots: ("morning" | "afternoon" | "evening")[] }` — sent alongside the lead data to Close CRM.
+- **Submit button**: "Request Callback" — sends the callback preferences. Shows a confirmation inline once submitted.
+
+The UI uses the existing ToggleGroup component for time slots and simple toggle chips for days to keep it lightweight.
+
+---
+
+## 3. Confirmation Flow
+
+- Initially shows the contact options + callback scheduler
+- After submitting callback preferences, the scheduler section collapses into a confirmation: "Callback requested — we'll be in touch at your preferred times"
+- Contact buttons remain visible throughout
+
+---
+
+## Technical Details
+
+### Files Modified
+
+`**src/components/LeadCaptureForm.tsx**`:
+
+- Replace the `submitted` return block (lines 59-72) with a new `ThankYouScreen` section
+- Add state for callback selections: `callbackSlots` as `Map<string, Set<string>>`
+- Add a `handleCallbackSubmit` function (currently logs/simulates, ready for CRM integration)
+- Generate next 7 days using `date-fns` (already installed) with `addDays` and `format`
+- Use `ToggleGroup` from existing UI components for time slot selection
+
+### New Component Structure (within LeadCaptureForm)
 
 ```text
-Your Pension Journey
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[████████████████████████████░░░░░░░░░] 26/35 years
-  20 current + 6 buyback
-
-To reach full pension (9 more years needed):
-  Past buyback (Class 2):          €1,259   ← act before April 2026
-  Future contributions (Class 3):  €9,560   ← 9 years × €1,062/yr
-  Total investment:                €10,819
-
-Projected pension: 100% (£221.20/week)
+ThankYou Card
++-- "Thank You" heading + message
++-- Contact Buttons Row
+|   +-- [Phone icon] Call Us  (tel: link)
+|   +-- [WhatsApp icon] WhatsApp Us  (whatsapp: link)
++-- Separator
++-- Callback Scheduler
+|   +-- "Request a Callback" heading
+|   +-- Day chips (next 7 days, multi-select)
+|   +-- Time slot toggles per selected day (Morning/Afternoon/Evening)
+|   +-- [Submit] "Request Callback" button
++-- Privacy note
 ```
 
-The key sales message remains: the €1,259 buyback portion is **5x cheaper per year** than the €9,560 future portion — reinforcing the urgency to act on past years now before Class 2 closes in April 2026.
+### Data for CRM
 
-No changes to the proposed solution design — only the example numbers in the plan are updated.
+The callback data structure to be sent alongside existing lead data:
 
+```typescript
+interface CallbackPreference {
+  date: string;        // e.g. "2026-03-04"
+  dateLabel: string;   // e.g. "Tue 4 Mar"
+  slots: string[];     // e.g. ["morning", "afternoon"]
+}
+```
+
+This is ready to be included in the Close CRM edge function payload when that integration is built.
+
+### Dependencies Used
+
+- `date-fns` (already installed) — for `addDays`, `format`, `startOfDay`
+- `lucide-react` (already installed) — `Phone`, `MessageCircle` icons
+- Existing UI: `Button`, `Card`, `Badge` or toggle chips, `Separator`

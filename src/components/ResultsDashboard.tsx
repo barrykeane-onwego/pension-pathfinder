@@ -1,15 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Clock, PiggyBank, AlertTriangle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target } from "lucide-react";
 import type { CalculatorResults } from "@/lib/pension-calculator";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+const fmtGBP = (n: number) => `£${n.toFixed(0)}`;
 
 interface Props {
   results: CalculatorResults;
   yearsToBuyBack: number;
+  currentYears: number;
 }
 
-const ResultsDashboard = ({ results, yearsToBuyBack }: Props) => {
+const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
   if (yearsToBuyBack === 0) {
     return (
       <Card className="border-dashed">
@@ -22,10 +25,78 @@ const ResultsDashboard = ({ results, yearsToBuyBack }: Props) => {
 
   const breakEvenYears = Math.floor(results.breakEvenMonths / 12);
   const breakEvenRemainder = results.breakEvenMonths % 12;
+  const afterBuybackPercent = (results.totalYearsAfterBuyback / 35) * 100;
+  const currentPercent = (currentYears / 35) * 100;
 
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-serif">Your Results</h2>
+
+      {/* Full Pension Journey Card */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Your Pension Journey
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Progress bar */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Progress value={afterBuybackPercent} className="h-5" />
+              {/* Current years marker */}
+              <div
+                className="absolute top-0 h-5 border-r-2 border-dashed border-muted-foreground/50"
+                style={{ left: `${currentPercent}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{currentYears} current + {yearsToBuyBack} buyback = <strong className="text-foreground">{results.totalYearsAfterBuyback} years</strong></span>
+              <span>35 target</span>
+            </div>
+          </div>
+
+          {/* Cost breakdown */}
+          {results.yearsStillNeeded > 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                To reach full pension ({results.yearsStillNeeded} more years needed):
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-md bg-primary/10 p-3">
+                  <p className="text-xs text-muted-foreground">Past buyback (Class 2)</p>
+                  <p className="text-lg font-bold text-primary">{fmt(results.costEUR)}</p>
+                  <p className="text-xs text-primary font-medium">⚡ Act before Apr 2026</p>
+                </div>
+                <div className="rounded-md bg-secondary p-3">
+                  <p className="text-xs text-muted-foreground">Future contributions (Class 3)</p>
+                  <p className="text-lg font-bold">{fmt(results.futureContributionCostEUR)}</p>
+                  <p className="text-xs text-muted-foreground">{results.futureYearsToContribute} years × {fmt(results.futureContributionCostEUR / Math.max(1, results.futureYearsToContribute))}/yr</p>
+                </div>
+                <div className="rounded-md bg-accent/10 p-3">
+                  <p className="text-xs text-muted-foreground">Total investment</p>
+                  <p className="text-lg font-bold">{fmt(results.totalInvestmentEUR)}</p>
+                  <p className="text-xs text-muted-foreground">{fmtGBP(results.totalInvestmentGBP)} GBP</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-primary font-medium">
+              ✓ You'll reach full pension qualification with this buyback!
+            </p>
+          )}
+
+          {/* Projected pension */}
+          <div className="rounded-md bg-card border p-3 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Projected pension</span>
+            <span className="text-right">
+              <span className="font-bold text-lg">{(results.projectedPensionPercentage * 100).toFixed(0)}%</span>
+              <span className="text-sm text-muted-foreground ml-2">({fmtGBP(results.projectedWeeklyPensionGBP)}/week)</span>
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-teal-light border-0">
@@ -33,9 +104,9 @@ const ResultsDashboard = ({ results, yearsToBuyBack }: Props) => {
             <div className="flex items-start gap-3">
               <PiggyBank className="h-5 w-5 text-primary mt-0.5" />
               <div>
-                <p className="text-sm text-muted-foreground">Total cost to buy back</p>
+                <p className="text-sm text-muted-foreground">Buyback cost (Class 2)</p>
                 <p className="text-2xl font-bold">{fmt(results.costEUR)}</p>
-                <p className="text-xs text-muted-foreground mt-1">£{results.costGBP.toFixed(0)} GBP</p>
+                <p className="text-xs text-muted-foreground mt-1">{fmtGBP(results.costGBP)} GBP</p>
               </div>
             </div>
           </CardContent>
@@ -48,7 +119,7 @@ const ResultsDashboard = ({ results, yearsToBuyBack }: Props) => {
               <div>
                 <p className="text-sm text-muted-foreground">Additional annual pension</p>
                 <p className="text-2xl font-bold">{fmt(results.additionalAnnualPensionEUR)}</p>
-                <p className="text-xs text-muted-foreground mt-1">£{results.additionalAnnualPensionGBP.toFixed(0)}/year GBP</p>
+                <p className="text-xs text-muted-foreground mt-1">{fmtGBP(results.additionalAnnualPensionGBP)}/year GBP</p>
               </div>
             </div>
           </CardContent>

@@ -24,7 +24,7 @@ const Index = () => {
 
       <main className="container max-w-4xl px-4 py-10 space-y-10">
         <CalculatorInputsSection inputs={inputs} onChange={setInputs} />
-        <ResultsDashboard results={results} yearsToBuyBack={inputs.yearsToBuyBack} />
+        <ResultsDashboard results={results} yearsToBuyBack={inputs.yearsToBuyBack} currentYears={inputs.currentYears} />
         <PensionChart results={results} yearsToBuyBack={inputs.yearsToBuyBack} />
         <LeadCaptureForm calculatorInputs={inputs} />
 
