@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target } from "lucide-react";
+import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target, Zap } from "lucide-react";
 import type { CalculatorResults } from "@/lib/pension-calculator";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -23,14 +23,61 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
     );
   }
 
-  const breakEvenYears = Math.floor(results.breakEvenMonths / 12);
-  const breakEvenRemainder = results.breakEvenMonths % 12;
   const afterBuybackPercent = (results.totalYearsAfterBuyback / 35) * 100;
   const currentPercent = (currentYears / 35) * 100;
+
+  const breakEvenTLYears = Math.floor(results.breakEvenMonthsTripleLock / 12);
+  const breakEvenTLMonths = results.breakEvenMonthsTripleLock % 12;
+
+  const breakEvenBuybackYears = Math.floor(results.breakEvenMonthsBuybackTripleLock / 12);
+  const breakEvenBuybackMonths = results.breakEvenMonthsBuybackTripleLock % 12;
+
+  const fmtBreakEven = (years: number, months: number) => {
+    if (years === 0 && months === 0) return "N/A";
+    if (years === 0) return `${months} month${months !== 1 ? "s" : ""}`;
+    if (months === 0) return `${years} year${years !== 1 ? "s" : ""}`;
+    return `${years}y ${months}m`;
+  };
 
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-serif">Your Results</h2>
+
+      {/* Triple-Lock Break-Even — Hero Card */}
+      <Card className="border-2 border-primary bg-primary/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            Triple-Lock Break-Even
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-lg bg-primary/10 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Buyback only</p>
+              <p className="text-3xl font-bold text-primary">
+                {fmtBreakEven(breakEvenBuybackYears, breakEvenBuybackMonths)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {fmt(results.costEUR)} cost → {fmt(results.additionalAnnualPensionEUR * Math.pow(1.035, results.yearsUntilPension))}/yr at claim
+              </p>
+            </div>
+            <div className="rounded-lg bg-accent/10 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Total journey (buyback + future)</p>
+              <p className="text-3xl font-bold">
+                {fmtBreakEven(breakEvenTLYears, breakEvenTLMonths)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {fmt(results.totalInvestmentEUR)} invested → {fmt(results.totalAdditionalAnnualPensionAtClaimEUR)}/yr at claim
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Your pension income is set at <strong>triple-lock-adjusted rates</strong> when you claim at age {Math.max(results.yearsUntilPension + 45, 67)}. 
+            With ~3.5% annual growth, your pension at claim will be significantly higher than today's rates.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Full Pension Journey Card */}
       <Card className="border-primary/20 bg-primary/5">
@@ -45,7 +92,6 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
           <div className="space-y-2">
             <div className="relative">
               <Progress value={afterBuybackPercent} className="h-5" />
-              {/* Current years marker */}
               <div
                 className="absolute top-0 h-5 border-r-2 border-dashed border-muted-foreground/50"
                 style={{ left: `${currentPercent}%` }}
@@ -118,8 +164,8 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
               <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
               <div>
                 <p className="text-sm text-muted-foreground">Additional annual pension</p>
-                <p className="text-2xl font-bold">{fmt(results.additionalAnnualPensionEUR)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{fmtGBP(results.additionalAnnualPensionGBP)}/year GBP</p>
+                <p className="text-2xl font-bold">{fmt(results.totalAdditionalAnnualPensionAtClaimEUR)}</p>
+                <p className="text-xs text-muted-foreground mt-1">at claim (triple-lock adjusted)</p>
               </div>
             </div>
           </CardContent>
@@ -130,11 +176,11 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
             <div className="flex items-start gap-3">
               <Clock className="h-5 w-5 text-primary mt-0.5" />
               <div>
-                <p className="text-sm text-muted-foreground">Break-even point</p>
+                <p className="text-sm text-muted-foreground">Break-even (flat rates)</p>
                 <p className="text-2xl font-bold">
-                  {breakEvenYears > 0 && `${breakEvenYears}y `}{breakEvenRemainder}m
+                  {Math.floor(results.breakEvenMonths / 12) > 0 && `${Math.floor(results.breakEvenMonths / 12)}y `}{results.breakEvenMonths % 12}m
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">of receiving pension</p>
+                <p className="text-xs text-muted-foreground mt-1">buyback only, no growth</p>
               </div>
             </div>
           </CardContent>
