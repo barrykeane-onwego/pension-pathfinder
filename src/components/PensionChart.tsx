@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea } from "recharts";
 import type { CalculatorResults } from "@/lib/pension-calculator";
 
 const fmt = (n: number) => `€${(n / 1000).toFixed(0)}k`;
@@ -12,16 +12,19 @@ interface Props {
 const PensionChart = ({ results, yearsToBuyBack }: Props) => {
   if (yearsToBuyBack === 0) return null;
 
+  // Find break-even year using triple-lock earnings
   const breakEvenYear = results.chartData.find(
-    (d) => d.cumulativeEarnings >= d.cost
+    (d) => d.cumulativeEarningsTripleLock >= d.cost
   )?.year;
+
+  const maxYear = results.chartData[results.chartData.length - 1]?.year ?? 25;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Cumulative Return Over Retirement</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Shows your cumulative pension earnings vs one-time cost, including projected triple-lock growth.
+          Shows your cumulative pension earnings vs total investment, including projected triple-lock growth at claim time.
         </p>
       </CardHeader>
       <CardContent>
@@ -39,13 +42,22 @@ const PensionChart = ({ results, yearsToBuyBack }: Props) => {
                 formatter={(value: number, name: string) => [
                   `€${value.toLocaleString()}`,
                   name === "cumulativeEarningsTripleLock"
-                    ? "Earnings (with triple lock)"
+                    ? "Earnings (triple lock)"
                     : name === "cumulativeEarnings"
                     ? "Earnings (flat)"
-                    : "Cost",
+                    : "Total investment",
                 ]}
                 labelFormatter={(label) => `Year ${label}`}
               />
+              {/* Profit zone: shaded area after break-even */}
+              {breakEvenYear !== undefined && (
+                <ReferenceArea
+                  x1={breakEvenYear}
+                  x2={maxYear}
+                  fill="hsl(174 62% 32% / 0.08)"
+                  strokeOpacity={0}
+                />
+              )}
               <Area
                 type="monotone"
                 dataKey="cost"
@@ -76,7 +88,13 @@ const PensionChart = ({ results, yearsToBuyBack }: Props) => {
                   x={breakEvenYear}
                   stroke="hsl(174 62% 32%)"
                   strokeDasharray="3 3"
-                  label={{ value: "Break-even", position: "top", fontSize: 11, fill: "hsl(174 62% 32%)" }}
+                  label={{
+                    value: `Break-even: Year ${breakEvenYear}`,
+                    position: "top",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    fill: "hsl(174 62% 32%)",
+                  }}
                 />
               )}
             </AreaChart>
@@ -90,8 +108,13 @@ const PensionChart = ({ results, yearsToBuyBack }: Props) => {
             <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/50" /> Earnings (flat)
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-destructive" /> Your cost
+            <span className="h-2.5 w-2.5 rounded-full bg-destructive" /> Total investment
           </span>
+          {breakEvenYear !== undefined && (
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/20" /> Profit zone
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
