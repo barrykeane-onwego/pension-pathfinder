@@ -57,7 +57,15 @@ const LeadCaptureForm = ({ calculatorInputs, calculatorResults }: Props) => {
     setSubmitting(true);
     try {
       // TODO: Send to Close CRM via edge function
-      // For now, simulate success
+      // Payload includes: form, calculatorInputs, calculatorResults, leadSource, timestamp
+      const payload = {
+        ...form,
+        calculatorInputs,
+        calculatorResults,
+        leadSource: new URLSearchParams(window.location.search).get("utm_source") || "calculator",
+        timestamp: new Date().toISOString(),
+      };
+      console.log("Lead payload:", payload);
       await new Promise((resolve) => setTimeout(resolve, 800));
       setSubmitted(true);
       toast({ title: "Thank you! We'll be in touch shortly." });

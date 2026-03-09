@@ -26,7 +26,7 @@ const Index = () => {
         <CalculatorInputsSection inputs={inputs} onChange={setInputs} />
         <ResultsDashboard results={results} yearsToBuyBack={inputs.yearsToBuyBack} currentYears={inputs.currentYears} />
         <PensionChart results={results} yearsToBuyBack={inputs.yearsToBuyBack} />
-        <LeadCaptureForm calculatorInputs={inputs} />
+        <LeadCaptureForm calculatorInputs={inputs} calculatorResults={results} />
 
         {/* Trust footer */}
         <footer className="text-center text-xs text-muted-foreground pb-8 space-y-2">
