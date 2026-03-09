@@ -149,19 +149,19 @@ export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
   const savingsVsClass3EUR = costClass3EUR - costEUR;
   const savingsPercentage = costClass3EUR > 0 ? (savingsVsClass3EUR / costClass3EUR) * 100 : 0;
 
-  // Chart data: uses total additional pension (buyback + future) vs total investment
+  // Chart data: year 0 = moment of claim (cumulative = 0), year 1 = first year's pension
   const chartData = [];
   let cumEarnings = 0;
   let cumEarningsTripleLock = 0;
   for (let y = 0; y <= 25; y++) {
-    cumEarnings += totalAdditionalAnnualPensionEUR;
-    cumEarningsTripleLock += totalAdditionalAnnualPensionAtClaimEUR;
     chartData.push({
       year: y,
       cumulativeEarnings: Math.round(cumEarnings),
       cost: Math.round(totalInvestmentEUR),
       cumulativeEarningsTripleLock: Math.round(cumEarningsTripleLock),
     });
+    cumEarnings += totalAdditionalAnnualPensionEUR;
+    cumEarningsTripleLock += totalAdditionalAnnualPensionAtClaimEUR;
   }
 
   return {
