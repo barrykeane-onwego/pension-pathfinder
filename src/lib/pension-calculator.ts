@@ -165,6 +165,7 @@ export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
   }
 
   return {
+    belowMinimumYears,
     costGBP,
     costEUR,
     costClass3GBP,
