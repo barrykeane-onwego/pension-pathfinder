@@ -17,6 +17,16 @@ interface Props {
     currentAge: number;
     retirementAge: number;
   };
+  calculatorResults?: {
+    costEUR: number;
+    breakEvenMonthsBuybackTripleLock: number;
+    additionalAnnualPensionEUR: number;
+    totalAdditionalAnnualPensionAtClaimEUR: number;
+    totalInvestmentEUR: number;
+    lifetimeROI10: number;
+    lifetimeROI20: number;
+    projectedPensionPercentage: number;
+  };
 }
 
 const LeadCaptureForm = ({ calculatorInputs }: Props) => {
