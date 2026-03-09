@@ -61,6 +61,8 @@ export interface CalculatorResults {
 export function calculatePension(inputs: CalculatorInputs): CalculatorResults {
   const { currentYears, yearsToBuyBack, contributionClass, currentAge, retirementAge } = inputs;
 
+  const belowMinimumYears = (currentYears + yearsToBuyBack) < MIN_QUALIFYING_YEARS;
+
   const weeklyRate = contributionClass === "class2" ? CLASS_2_WEEKLY : CLASS_3_WEEKLY;
   const costPerYear = weeklyRate * WEEKS_PER_YEAR;
   const costGBP = costPerYear * yearsToBuyBack;
