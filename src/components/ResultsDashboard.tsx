@@ -86,8 +86,8 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Your pension income is set at <strong>triple-lock-adjusted rates</strong> when you claim at age {Math.max(results.yearsUntilPension + 45, 67)}. 
-            With ~3.5% annual growth, your pension at claim will be significantly higher than today's rates.
+            Pension income is shown at <strong>triple-lock-adjusted rates</strong> (conservative 3.5%/yr estimate) when you claim at age {Math.max(results.yearsUntilPension + 45, 67)}. 
+            The triple lock is a government policy commitment, not a legal guarantee — actual increases may vary.
           </p>
         </CardContent>
       </Card>
