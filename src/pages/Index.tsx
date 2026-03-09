@@ -31,8 +31,9 @@ const Index = () => {
         {/* Trust footer */}
         <footer className="text-center text-xs text-muted-foreground pb-8 space-y-2">
           <p>
-            Calculations based on 2024/25 HMRC rates. Exchange rate: £1 = €1.17 (approximate).
-            Projections include estimated triple lock growth (~3.5%/year).
+            Calculations based on 2025/26 HMRC rates (full pension: £230.25/week). Exchange rate: £1 = €1.17 (approximate).
+            Projections use a conservative 3.5%/year triple-lock growth estimate. The triple lock is a government commitment, not a statutory guarantee.
+            State pension age is rising from 66 to 67 between 2026–2028. You need a minimum of 10 qualifying years for any pension entitlement.
           </p>
           <p>
             Source:{" "}
