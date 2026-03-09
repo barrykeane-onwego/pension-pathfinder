@@ -44,6 +44,18 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
     <div className="space-y-4">
       <h2 className="text-2xl font-serif">Your Results</h2>
 
+      {/* 10-year minimum warning */}
+      {results.belowMinimumYears && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Minimum 10 years required</AlertTitle>
+          <AlertDescription>
+            You need at least 10 qualifying NI years to receive any UK state pension. 
+            With {currentYears + yearsToBuyBack} years, you wouldn't yet qualify. Consider buying back more years or planning future contributions.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Triple-Lock Break-Even — Hero Card */}
       <Card className="border-2 border-primary bg-primary/5">
         <CardHeader className="pb-2">
