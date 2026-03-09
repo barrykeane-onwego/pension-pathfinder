@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target, Zap } from "lucide-react";
+import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target, Zap, Info } from "lucide-react";
 import type { CalculatorResults } from "@/lib/pension-calculator";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
