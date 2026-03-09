@@ -29,7 +29,7 @@ interface Props {
   };
 }
 
-const LeadCaptureForm = ({ calculatorInputs }: Props) => {
+const LeadCaptureForm = ({ calculatorInputs, calculatorResults }: Props) => {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
