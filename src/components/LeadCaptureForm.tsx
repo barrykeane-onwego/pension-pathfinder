@@ -17,9 +17,19 @@ interface Props {
     currentAge: number;
     retirementAge: number;
   };
+  calculatorResults?: {
+    costEUR: number;
+    breakEvenMonthsBuybackTripleLock: number;
+    additionalAnnualPensionEUR: number;
+    totalAdditionalAnnualPensionAtClaimEUR: number;
+    totalInvestmentEUR: number;
+    lifetimeROI10: number;
+    lifetimeROI20: number;
+    projectedPensionPercentage: number;
+  };
 }
 
-const LeadCaptureForm = ({ calculatorInputs }: Props) => {
+const LeadCaptureForm = ({ calculatorInputs, calculatorResults }: Props) => {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -47,7 +57,15 @@ const LeadCaptureForm = ({ calculatorInputs }: Props) => {
     setSubmitting(true);
     try {
       // TODO: Send to Close CRM via edge function
-      // For now, simulate success
+      // Payload includes: form, calculatorInputs, calculatorResults, leadSource, timestamp
+      const payload = {
+        ...form,
+        calculatorInputs,
+        calculatorResults,
+        leadSource: new URLSearchParams(window.location.search).get("utm_source") || "calculator",
+        timestamp: new Date().toISOString(),
+      };
+      console.log("Lead payload:", payload);
       await new Promise((resolve) => setTimeout(resolve, 800));
       setSubmitted(true);
       toast({ title: "Thank you! We'll be in touch shortly." });

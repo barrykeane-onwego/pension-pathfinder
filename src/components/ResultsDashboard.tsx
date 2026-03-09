@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target, Zap } from "lucide-react";
+import { TrendingUp, Clock, PiggyBank, AlertTriangle, Target, Zap, Info } from "lucide-react";
 import type { CalculatorResults } from "@/lib/pension-calculator";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -43,6 +44,18 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
     <div className="space-y-4">
       <h2 className="text-2xl font-serif">Your Results</h2>
 
+      {/* 10-year minimum warning */}
+      {results.belowMinimumYears && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Minimum 10 years required</AlertTitle>
+          <AlertDescription>
+            You need at least 10 qualifying NI years to receive any UK state pension. 
+            With {currentYears + yearsToBuyBack} years, you wouldn't yet qualify. Consider buying back more years or planning future contributions.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Triple-Lock Break-Even — Hero Card */}
       <Card className="border-2 border-primary bg-primary/5">
         <CardHeader className="pb-2">
@@ -73,8 +86,8 @@ const ResultsDashboard = ({ results, yearsToBuyBack, currentYears }: Props) => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Your pension income is set at <strong>triple-lock-adjusted rates</strong> when you claim at age {Math.max(results.yearsUntilPension + 45, 67)}. 
-            With ~3.5% annual growth, your pension at claim will be significantly higher than today's rates.
+            Pension income is shown at <strong>triple-lock-adjusted rates</strong> (conservative 3.5%/yr estimate) when you claim at age {Math.max(results.yearsUntilPension + 45, 67)}. 
+            The triple lock is a government policy commitment, not a legal guarantee — actual increases may vary.
           </p>
         </CardContent>
       </Card>
