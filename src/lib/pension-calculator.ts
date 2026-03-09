@@ -1,15 +1,18 @@
 // 2025/26 rates
-export const CLASS_2_WEEKLY = 3.45; // GBP per week
-export const CLASS_3_WEEKLY = 17.45; // GBP per week
+export const CLASS_2_WEEKLY = 3.45; // GBP per week (2024/25 rate — used for retrospective buyback)
+export const CLASS_3_WEEKLY = 17.45; // GBP per week (2024/25 rate)
 export const WEEKS_PER_YEAR = 52;
-export const FULL_PENSION_WEEKLY_GBP = 221.20; // 2024/25 full new state pension
+export const FULL_PENSION_WEEKLY_GBP = 230.25; // 2025/26 full new state pension
 export const FULL_PENSION_YEARS = 35;
 export const GBP_TO_EUR = 1.17; // approximate rate
 
-// Triple lock: average ~3.5% annual increase historically
+// Triple lock: conservative estimate (~3.5%/year)
+// Actual average since 2011 is ~4.1%, but 3.5% is used as a prudent forward-looking projection.
+// The triple lock is a political commitment, not a legal guarantee.
 export const TRIPLE_LOCK_RATE = 0.035;
 
-export const UK_STATE_PENSION_AGE = 67;
+export const UK_STATE_PENSION_AGE = 67; // SPA rising from 66→67 between 2026–2028; 67 used as default
+export const MIN_QUALIFYING_YEARS = 10; // Minimum years for ANY state pension entitlement
 
 export interface CalculatorInputs {
   currentYears: number;
