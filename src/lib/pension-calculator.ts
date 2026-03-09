@@ -23,6 +23,7 @@ export interface CalculatorInputs {
 }
 
 export interface CalculatorResults {
+  belowMinimumYears: boolean; // true if currentYears + yearsToBuyBack < 10
   costGBP: number;
   costEUR: number;
   costClass3GBP: number;
